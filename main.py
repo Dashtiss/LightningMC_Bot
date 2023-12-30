@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import difflib
 from discord.ui import Button, View
 
+CommitNumber = "1"
+
 
 # Sets up all the variables
 lastNumber = 0
