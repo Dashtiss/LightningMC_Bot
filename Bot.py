@@ -135,7 +135,7 @@ async def on_ready():
     botschannel = client.get_channel(DiscordTextChannels["bots"])
     embed = discord.Embed(
         title="Status",
-        description=f"Checks\nIs Testing: ✅\nIs Online: ✅",
+        description=f"Checks\nIs Testing: ❌\nIs Online: ✅",
         color=0x58fe75  # You can customize the color using hexadecimal
     )
     await botschannel.send(content=f"{client.user.name} is online")
