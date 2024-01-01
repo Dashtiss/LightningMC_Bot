@@ -129,7 +129,7 @@ async def on_ready():
     Prints information about connected servers and channels.
     """
     print(f'{client.user} has connected to Discord!     {client.status}')
-    game = discord.Game("Galaxysten is cool")
+    game = discord.Game("on Lightning-MC.net")
     await client.change_presence(status=discord.Status.idle, activity=game)
     await client.add_cog(HelpCog(client))
     botschannel = client.get_channel(DiscordTextChannels["bots"])
