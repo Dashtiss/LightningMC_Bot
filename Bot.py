@@ -141,21 +141,13 @@ async def on_ready():
     await botschannel.send(content=f"{client.user.name} is online")
     await botschannel.send(embed=embed)
 
-    for guild in client.guilds:
-        print("Server: ", end="")
-        print(guild)
-        print("Users: ", end="")
-        print("User count: ", end="")
-        print(int(guild.member_count))
-        print("Is lightningMC: ", end="")
-        print(guild.name == "LightningMC")
-
-        channel = guild.get_channel(DiscordTextChannels["clickertest"])
-        async for message in channel.history(limit=100):
-            await message.delete()
-        counter_view = CounterView()
-        message = await channel.send(GetText(), view=counter_view)
-        counter_view.message = message
+    guild = client.get_guild(1010718669577408533)
+    channel = guild.get_channel(DiscordTextChannels["clickertest"])
+    async for message in channel.history(limit=100):
+        await message.delete()
+    counter_view = CounterView()
+    message = await channel.send(GetText(), view=counter_view)
+    counter_view.message = message
 
 
 @client.event
