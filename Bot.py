@@ -8,7 +8,6 @@ from discord.ui import Button, View
 
 CommitNumber = "1"
 
-
 # Sets up all the variables
 lastNumber = 0
 HighestNumber = 0
@@ -35,8 +34,6 @@ Types = discord.ChannelType
 
 # List to store words
 words = []
-
-
 
 # Dictionary to store Discord text channels by name
 DiscordTextChannels = {
@@ -261,6 +258,7 @@ async def on_message(message):
             lastUsers = ""
             HasHitHighest = False
 
+
 class HelpCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -278,8 +276,8 @@ class HelpCog(commands.Cog):
         # Send the help message as a private message
         await ctx.author.send(help_message)
 
-
-if __name__ == "__main__":
+def Run():
+    global words
     try:
         # Get the bot token from the environment variables
         bot_token = os.getenv('TOKEN')
@@ -295,8 +293,15 @@ if __name__ == "__main__":
             # Run the bot with the token
             client.run(bot_token)
             with open("saves.json", "w") as file:
-                code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber, "UsersButtonPushed" : UsersButtonPushed}
+                code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber,
+                        "UsersButtonPushed": UsersButtonPushed}
                 json.dump(code, file)
     except KeyboardInterrupt:
         with open("saves.json", "w") as file:
-            code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber, "UsersButtonPushed" : UsersButtonPushed}
+            code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber,
+                    "UsersButtonPushed": UsersButtonPushed}
+            json.dump(code, file)
+
+
+if __name__ == "__main__":
+    Run()
