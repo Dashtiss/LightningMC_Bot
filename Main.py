@@ -25,6 +25,8 @@ if __name__ == "__main__":
                 BotFile.write(update)
             import Bot
             Bot.Run()
+        else:
+            print("Bot is un up date")
     else:
         with open("Bot.py", "w", encoding="utf-8") as BotFile:
             BotFile.write(update)

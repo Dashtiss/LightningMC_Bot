@@ -134,7 +134,7 @@ async def on_ready():
     await client.add_cog(HelpCog(client))
     botschannel = client.get_channel(DiscordTextChannels["bots"])
     embed = discord.Embed(
-        title="Hit the Highest",
+        title="Status",
         description=f"Checks\nIs Testing: ✅\nIs Online: ✅",
         color=0x58fe75  # You can customize the color using hexadecimal
     )
