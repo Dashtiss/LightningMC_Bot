@@ -212,7 +212,7 @@ async def on_message(message: discord.Message):
             await message.add_reaction('❌')
             embed = discord.Embed(
                 title="Only one at a time.",
-                description=f"Players can only go one time and have to wait for another person to go\nUser {message.author.mention} messed up,restarting \nLast Number was {lastNumber}",
+                description=f"Players can only go one time and have to wait for another person to go\nUser {message.author.mention} messed up,restarting \nLast Number was {lastNumber + 1}",
                 color=0xff0000  # You can customize the color using hexadecimal
             )
             await message.channel.send(embed=embed)
@@ -224,7 +224,7 @@ async def on_message(message: discord.Message):
             await message.add_reaction('❌')
             embed = discord.Embed(
                 title="Number wasn't synchronized",
-                description=f"The numbers didn't add up\nUser {message.author.mention} messed up, restarting \nLast Number was {lastNumber}",
+                description=f"The numbers didn't add up\nUser {message.author.mention} messed up, restarting \nLast Number was {lastNumber + 1}",
                 color=0xff0000  # You can customize the color using hexadecimal
             )
             await message.channel.send(embed=embed)
