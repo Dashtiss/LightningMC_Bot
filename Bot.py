@@ -157,6 +157,35 @@ async def on_ready():
 @client.event
 async def on_message(message: discord.Message):
     global lastNumber, lastUsers, HasHitHighest, HighestNumber
+    if str(message.content).startswith("!"):
+        msg = str(message.content)
+        if msg.startswith("!help"):
+            pass
+        elif msg.startswith("!check-api"):
+            await message.reply(content="API is not available right now")
+        elif msg.startswith("!clear-button"):
+            global UsersButtonPushed
+            await message.channel.send("Clearing Button")
+            UsersButtonPushed = {}
+            print("clearing button")
+        elif msg.startswith("!SetNumber"):
+            content = msg.split(" ")
+            try:
+                SetNumber = int(content[1])
+            except ValueError:
+                await message.reply("Error, Could not turn that into a int")
+            lastNumber = SetNumber
+            await message.delete()
+        elif msg.startswith("!ResetNumber"):
+            lastNumber = 0
+            Embed = discord.Embed(
+                title="Reset",
+                description="A Admin has reset the number back to 1",
+                color=0xff0000
+            )
+            bots = client.get_channel(DiscordTextChannels['count'])
+            await bots.send(embed=Embed)
+            await message.delete()
     if message.channel.name == "count":
         try:
             number = int(str(message.content))
@@ -205,35 +234,7 @@ async def on_message(message: discord.Message):
 
     else:
         try:
-            if str(message.content).startswith("!"):
-                msg = str(message.content)
-                if msg.startswith("!help"):
-                    pass
-                elif msg.startswith("!check-api"):
-                    await message.reply(content="API is not available right now")
-                elif msg.startswith("!clear-button"):
-                    global UsersButtonPushed
-                    await message.channel.send("Clearing Button")
-                    UsersButtonPushed = {}
-                    print("clearing button")
-                elif msg.startswith("!SetNumber"):
-                    content = msg.split(" ")
-                    try:
-                        SetNumber = int(content[1])
-                    except ValueError:
-                        await message.reply("Error, Could not turn that into a int")
-                    lastNumber = SetNumber
-                    await message.delete()
-                elif msg.startswith("!ResetNumber"):
-                    lastNumber = 0
-                    Embed = discord.Embed(
-                        title="Reset",
-                        description="A Admin has reset the number back to 1",
-                        color=0xff0000
-                    )
-                    bots = client.get_channel(DiscordTextChannels['count'])
-                    await bots.send(embed=Embed)
-                    await message.delete()
+
             if str(message.author) == "LightningMC-Survival#5428":
                 if CheckName(str(message.content)):
                     Player = message.content.split(":")[0].split(" ")[1]
