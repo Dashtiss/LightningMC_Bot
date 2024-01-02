@@ -239,7 +239,7 @@ async def on_message(message: discord.Message):
                     Player = message.content.split(":")[0].split(" ")[1]
                     Player.replace("\\", "")
                     for word in message.content.split():
-                        if is_similar_to_word(word.lower(), words, threshold=0.88):
+                        if is_similar_to_word(word.lower(), words, threshold=0.92):
                             staff_chat_channel = message.guild.get_channel(
                                 DiscordTextChannels.get("bots"))
                             if staff_chat_channel:
