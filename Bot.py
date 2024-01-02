@@ -25,7 +25,7 @@ if os.path.exists("saves.json"):
 # Set up Discord intents for specific events
 intents = discord.Intents.default()
 intents.message_content = True
-
+LightningMC = None
 # Load environment variables from .env file
 load_dotenv()
 
@@ -40,7 +40,8 @@ DiscordTextChannels = {
     'staff-chat': 1010722709354844230,
     'admin-stuff': 1138990105386819724,
     'bots': 1011794713361260544,
-    "clickertest": 1190345552978776094
+    "clickertest": 1190345552978776094,
+    "count": 1190410937233047662
     # Add more channels as needed
 }
 
@@ -56,7 +57,6 @@ def GetText() -> str:
     for key, value in UsersButtonPushed.items():
         text += f"{key} has pressed the button {value} {'times' if value > 1 else 'time'}\n"
     return text
-
 
 class CounterButton(Button):
     def __init__(self):
@@ -123,6 +123,7 @@ client = commands.Bot(intents=intents, command_prefix="!")
 
 @client.event
 async def on_ready():
+    global LightningMC
     """
     Event handler when the bot is ready.
 
@@ -132,14 +133,15 @@ async def on_ready():
     game = discord.Game("on Lightning-MC.net")
     await client.change_presence(status=discord.Status.idle, activity=game)
     await client.add_cog(HelpCog(client))
-    botschannel = client.get_channel(DiscordTextChannels["bots"])
+    LightningMC = client.get_guild(1010718669577408533)
+    BotDiscordChannel = client.get_channel(DiscordTextChannels["bots"])
     embed = discord.Embed(
         title="Status",
         description=f"Checks\nIs Testing: ❌\nIs Online: ✅",
         color=0x58fe75  # You can customize the color using hexadecimal
     )
-    await botschannel.send(content=f"{client.user.name} is online")
-    await botschannel.send(embed=embed)
+    await BotDiscordChannel.send(content=f"{client.user.name} is online")
+    await BotDiscordChannel.send(embed=embed)
 
     guild = client.get_guild(1010718669577408533)
     channel = guild.get_channel(DiscordTextChannels["clickertest"])
@@ -150,59 +152,10 @@ async def on_ready():
     counter_view.message = message
 
 
-@client.event
-async def on_message(message):
-    try:
-        if str(message.content).startswith("!"):
-            msg = str(message.content)
-            if msg.startswith("!help"):
-                pass
-            elif msg.startswith("!check-api"):
-                import requests
-            elif msg.startswith("!clearbutton"):
-                global UsersButtonPushed
-                await message.channel.send("Clearing Button")
-                UsersButtonPushed = {}
-
-        if str(message.author) == "LightningMC-Survival#5428":
-            if CheckName(str(message.content)):
-                Player = message.content.split(":")[0].split(" ")[1]
-                Player.replace("\\", "")
-                for word in message.content.split():
-                    if is_similar_to_word(word.lower(), words, threshold=0.88):
-                        staff_chat_channel = message.guild.get_channel(
-                            DiscordTextChannels.get("bots"))
-                        if staff_chat_channel:
-                            embed = discord.Embed(
-                                title="Chat Message Warn",
-                                description=f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: {str(message.content).split(': ')[1]}",
-                                color=0x78bef9  # You can customize the color using hexadecimal
-                            )
-                            await staff_chat_channel.send(
-                                embed=embed)
-                            print(
-                                f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: {message.content}")
-                            await message.delete()
-                            break
-                        else:
-                            print("Error: 'staff-chat' channel not found.")
-    except Exception as E:
-        staff_chat_channel = message.guild.get_channel(
-            DiscordTextChannels.get("bots"))
-        if staff_chat_channel:
-            embed = discord.Embed(
-                title="Error Has happened",
-                description=f"Error: {E}\n\nArgs: {E.args}",
-                color=0xff0000  # You can customize the color using hexadecimal
-            )
-            await staff_chat_channel.send(
-                embed=embed)
-            print(
-                f"Error: {E}\n\nArgs: {E.args}")
 
 
 @client.event
-async def on_message(message):
+async def on_message(message: discord.Message):
     global lastNumber, lastUsers, HasHitHighest, HighestNumber
     if message.channel.name == "count":
         try:
@@ -250,6 +203,73 @@ async def on_message(message):
             lastUsers = ""
             HasHitHighest = False
 
+    else:
+        try:
+            if str(message.content).startswith("!"):
+                msg = str(message.content)
+                if msg.startswith("!help"):
+                    pass
+                elif msg.startswith("!check-api"):
+                    await message.reply(content="API is not available right now")
+                elif msg.startswith("!clear-button"):
+                    global UsersButtonPushed
+                    await message.channel.send("Clearing Button")
+                    UsersButtonPushed = {}
+                    print("clearing button")
+                elif msg.startswith("!SetNumber"):
+                    content = msg.split(" ")
+                    try:
+                        SetNumber = int(content[1])
+                    except ValueError:
+                        await message.reply("Error, Could not turn that into a int")
+                    lastNumber = SetNumber
+                    await message.delete()
+                elif msg.startswith("!ResetNumber"):
+                    lastNumber = 0
+                    Embed = discord.Embed(
+                        title="Reset",
+                        description="A Admin has reset the number back to 1",
+                        color=0xff0000
+                    )
+                    bots = client.get_channel(DiscordTextChannels['count'])
+                    await bots.send(embed=Embed)
+                    await message.delete()
+            if str(message.author) == "LightningMC-Survival#5428":
+                if CheckName(str(message.content)):
+                    Player = message.content.split(":")[0].split(" ")[1]
+                    Player.replace("\\", "")
+                    for word in message.content.split():
+                        if is_similar_to_word(word.lower(), words, threshold=0.88):
+                            staff_chat_channel = message.guild.get_channel(
+                                DiscordTextChannels.get("bots"))
+                            if staff_chat_channel:
+                                embed = discord.Embed(
+                                    title="Chat Message Warn",
+                                    description=f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: {str(message.content).split(': ')[1]}",
+                                    color=0x78bef9  # You can customize the color using hexadecimal
+                                )
+                                await staff_chat_channel.send(
+                                    embed=embed)
+                                print(
+                                    f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: {message.content}")
+                                await message.delete()
+                                break
+                            else:
+                                print("Error: 'staff-chat' channel not found.")
+        except Exception as E:
+            staff_chat_channel = message.guild.get_channel(
+                DiscordTextChannels.get("bots"))
+            if staff_chat_channel:
+                embed = discord.Embed(
+                    title="Error Has happened",
+                    description=f"Error: {E}\n\nArgs: {E.args}",
+                    color=0xff0000  # You can customize the color using hexadecimal
+                )
+                await staff_chat_channel.send(
+                    embed=embed)
+                print(
+                    f"Error: {E}\n\nArgs: {E.args}")
+
 
 class HelpCog(commands.Cog):
     def __init__(self, bot):
@@ -279,20 +299,20 @@ def Run():
         else:
             print('Loading Words')
             # Load words from a JSON file
-            with open("words.json", "r") as file:
-                words = json.load(file)
+            with open("words.json", "r") as WordsFile:
+                words = json.load(WordsFile)
             print(f'Finished loading all {len(words)} words')
             # Run the bot with the token
             client.run(bot_token)
-            with open("saves.json", "w") as file:
+            with open("saves.json", "w") as SaveFile:
                 code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber,
                         "UsersButtonPushed": UsersButtonPushed}
-                json.dump(code, file)
+                json.dump(code, SaveFile)
     except KeyboardInterrupt:
-        with open("saves.json", "w") as file:
+        with open("saves.json", "w") as SaveFile:
             code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber,
                     "UsersButtonPushed": UsersButtonPushed}
-            json.dump(code, file)
+            json.dump(code, SaveFile)
 
 
 if __name__ == "__main__":

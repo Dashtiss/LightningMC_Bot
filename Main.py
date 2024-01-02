@@ -2,7 +2,7 @@ import requests
 import os
 
 def Update():
-    url = f'https://raw.githubusercontent.com/Dashtiss/Lightning-MC-Bot/master/Bot.py'
+    url = "https://raw.githubusercontent.com/Dashtiss/Lightning-MC-Bot/master/Bot.py"
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -13,6 +13,8 @@ def Update():
 
 
 if __name__ == "__main__":
+    if os.environ['COMPUTERNAME'] == "PLAYROOM-PC":
+        exit()
     update = Update()
     if update is None:
         raise "File is Error"
