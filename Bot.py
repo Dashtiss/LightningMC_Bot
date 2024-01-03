@@ -6,8 +6,9 @@ from dotenv import load_dotenv
 import difflib
 from discord.ui import Button, View
 
+# ---------|||||||Variables||||||-----------------
 CommitNumber = "1"
-
+Testing = True
 # Sets up all the variables
 lastNumber = 0
 HighestNumber = 0
@@ -23,8 +24,7 @@ if os.path.exists("saves.json"):
         lastUsers = saves["LastUser"]
         UsersButtonPushed = saves["UsersButtonPushed"]
 # Set up Discord intents for specific events
-intents = discord.Intents.default()
-intents.message_content = True
+intents = discord.Intents.all()
 LightningMC = None
 # Load environment variables from .env file
 load_dotenv()
@@ -45,7 +45,11 @@ DiscordTextChannels = {
     # Add more channels as needed
 }
 
+# Sets up the bot with Discord.ext.commands.Bot
+bot = commands.Bot(intents=intents, command_prefix="$")
 
+
+# ---------|||||||Extra Functions||||||-----------------
 def GetText() -> str:
     """
     Generate a string with user button press information.
@@ -57,6 +61,7 @@ def GetText() -> str:
     for key, value in UsersButtonPushed.items():
         text += f"{key} has pressed the button {value} {'times' if value > 1 else 'time'}\n"
     return text
+
 
 class CounterButton(Button):
     def __init__(self):
@@ -117,11 +122,8 @@ def is_similar_to_word(word, word_list, threshold=0.8):
     return False
 
 
-# Initialize the custom client with intents
-client = commands.Bot(intents=intents, command_prefix="!")
-
-
-@client.event
+# ---------||||||Discord Bot Functions||||||-----------------
+@bot.event
 async def on_ready():
     global LightningMC
     """
@@ -129,21 +131,26 @@ async def on_ready():
 
     Prints information about connected servers and channels.
     """
-    print(f'{client.user} has connected to Discord!     {client.status}')
-    game = discord.Game("on Lightning-MC.net")
-    await client.change_presence(status=discord.Status.idle, activity=game)
-    await client.add_cog(HelpCog(client))
-    LightningMC = client.get_guild(1010718669577408533)
-    BotDiscordChannel = client.get_channel(DiscordTextChannels["bots"])
+    print(f'{bot.user} has connected to Discord!     {bot.status}')
+    if Testing:
+        await bot.change_presence(
+            status=discord.Status.idle,
+            activity=discord.Game("Getting new features added to me")
+        )
+    else:
+        game = discord.Game("on Lightning-MC.net")
+        await bot.change_presence(status=discord.Status.online, activity=game)
+    LightningMC = bot.get_guild(1010718669577408533)
+    BotDiscordChannel = bot.get_channel(DiscordTextChannels["bots"])
     embed = discord.Embed(
         title="Status",
         description=f"Checks\nIs Testing: ❌\nIs Online: ✅",
         color=0x58fe75  # You can customize the color using hexadecimal
     )
-    await BotDiscordChannel.send(content=f"{client.user.name} is online")
+    await BotDiscordChannel.send(content=f"{bot.user.name} is online")
     await BotDiscordChannel.send(embed=embed)
 
-    guild = client.get_guild(1010718669577408533)
+    guild = bot.get_guild(1010718669577408533)
     channel = guild.get_channel(DiscordTextChannels["clickertest"])
     async for message in channel.history(limit=100):
         await message.delete()
@@ -152,9 +159,7 @@ async def on_ready():
     counter_view.message = message
 
 
-
-
-@client.event
+@bot.event
 async def on_message(message: discord.Message):
     global lastNumber, lastUsers, HasHitHighest, HighestNumber
     if str(message.content).startswith("!"):
@@ -183,7 +188,7 @@ async def on_message(message: discord.Message):
                 description="A Admin has reset the number back to 1",
                 color=0xff0000
             )
-            bots = client.get_channel(DiscordTextChannels['count'])
+            bots = bot.get_channel(DiscordTextChannels['count'])
             await bots.send(embed=Embed)
             await message.delete()
     if message.channel.name == "count":
@@ -224,7 +229,8 @@ async def on_message(message: discord.Message):
             await message.add_reaction('❌')
             embed = discord.Embed(
                 title="Number wasn't synchronized",
-                description=f"The numbers didn't add up\nUser {message.author.mention} messed up, restarting \nLast Number was {lastNumber + 1}",
+                description=f"The numbers didn't add up\nUser {message.author.mention} messed up, restarting \nLast "
+                            f"Number was {lastNumber + 1}",
                 color=0xff0000  # You can customize the color using hexadecimal
             )
             await message.channel.send(embed=embed)
@@ -272,23 +278,19 @@ async def on_message(message: discord.Message):
                     f"Error: {E}\n\nArgs: {E.args}")
 
 
-class HelpCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+"""-------------------|||||||||||Commands||||||||----------------------------"""
 
-    @commands.command(pass_context=True)
-    async def test_command(self, ctx):
-        """test command"""
-        print("got message")
-        # Create a message with bot information
-        help_message = "Hello! I'm your cool bot. Here are some commands:\n\n" \
-                       "!help - Get information about the bot\n" \
-                       "!ping - Check the bot's latency\n" \
-                       "!your_command - Your custom command\n"
 
-        # Send the help message as a private message
-        await ctx.author.send(help_message)
+@bot.command()
+async def foo(ctx, arg):
+    ctx.send(arg)
+@bot.hybrid_command()
+async def test(ctx):
+    print("Got Message")
+    await ctx.send("This is a hybrid command!")
 
+
+# ---------|||||||Running the bot||||||-----------------
 def Run():
     global words
     try:
@@ -304,7 +306,7 @@ def Run():
                 words = json.load(WordsFile)
             print(f'Finished loading all {len(words)} words')
             # Run the bot with the token
-            client.run(bot_token)
+            bot.run(bot_token)
             with open("saves.json", "w") as SaveFile:
                 code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber,
                         "UsersButtonPushed": UsersButtonPushed}
