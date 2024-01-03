@@ -309,6 +309,7 @@ async def on_message(message: discord.Message):
 
 @bot.command()
 async def foo(ctx, arg):
+    print("Foo happened")
     await ctx.send(arg)
 
 
