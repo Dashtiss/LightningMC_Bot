@@ -17,9 +17,10 @@ lastUsers = ""
 UsersButtonPushed = {}
 
 # Sets if these systems will  be online
-CountingSystem = False
-ClickingSystem = False
-
+CountingSystem = True
+ClickingSystem = True
+CTOnline = False
+CLOnline = False
 # will set the reason why it is disabled
 DisabledReason = "Bot is Undergoing major updates and the system your trying to use is down for maintenance"
 
@@ -31,6 +32,8 @@ if os.path.exists("saves.json"):
         HighestNumber = saves["HighestNumber"]
         lastUsers = saves["LastUser"]
         UsersButtonPushed = saves["UsersButtonPushed"]
+        CTOnline = saves["CountingSystem"]
+
 # Set up Discord intents for specific events
 intents = discord.Intents.all()
 LightningMC = None
@@ -55,7 +58,7 @@ DiscordTextChannels = {
 }
 
 # Sets up the bot with Discord.ext.commands.Bot
-bot = commands.Bot(intents=intents, command_prefix="$")
+bot = commands.Bot(intents=intents, command_prefix="!")
 
 
 # ---------|||||||Extra Functions||||||-----------------
@@ -155,8 +158,8 @@ async def on_ready():
         title="Status",
         description=f"Checks\nIs Testing: ✅\n"
                     f"Systems online:"
-                    f"Counting: {CountingSystem}"
-                    f"Clicking: {ClickingSystem}",
+                    f"Counting: {CountingSystem}\n"
+                    f"Clicking: {ClickingSystem}\n",
         color=0x58fe75  # You can customize the color using hexadecimal
     )
     await BotDiscordChannel.send(content=f"{bot.user.name} is online")
@@ -166,6 +169,13 @@ async def on_ready():
     channel = guild.get_channel(DiscordTextChannels["clickertest"])
     async for message in channel.history(limit=100):
         await message.delete()
+    if CountingSystem and not CTOnline:
+        embed = discord.Embed(
+            title="Counting System is back online",
+            color=0x58fe75  # You can customize the color using hexadecimal
+        )
+        CountingChannel = bot.get_channel(DiscordTextChannels["count"])
+        await CountingChannel.send(embed=embed)
     if ClickingSystem:
         counter_view = CounterView()
         message = await channel.send(GetText(), view=counter_view)
@@ -179,9 +189,11 @@ async def on_ready():
         await channel.send(embed=embed)
 
 
+
 @bot.event
 async def on_message(message: discord.Message):
     global lastNumber, lastUsers, HasHitHighest, HighestNumber
+    """
     if str(message.content).startswith("!"):
         msg = str(message.content)
         if msg.startswith("!help"):
@@ -210,7 +222,7 @@ async def on_message(message: discord.Message):
             )
             bots = bot.get_channel(DiscordTextChannels['count'])
             await bots.send(embed=Embed)
-            await message.delete()
+            await message.delete()"""
     if CountingSystem:
         if message.channel.name == "count":
             try:
@@ -333,12 +345,13 @@ def Run():
             bot.run(bot_token)
             with open("saves.json", "w") as SaveFile:
                 code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber,
-                        "UsersButtonPushed": UsersButtonPushed}
+                        "UsersButtonPushed": UsersButtonPushed, "CountingSystem": CountingSystem, "ClickerSystem": ClickingSystem}
                 json.dump(code, SaveFile)
     except KeyboardInterrupt:
         with open("saves.json", "w") as SaveFile:
             code = {"LastNumber": lastNumber, "LastUser": lastUsers, "HighestNumber": HighestNumber,
-                    "UsersButtonPushed": UsersButtonPushed}
+                    "UsersButtonPushed": UsersButtonPushed, "CountingSystem": CountingSystem,
+                    "ClickerSystem": ClickingSystem}
             json.dump(code, SaveFile)
 
 
