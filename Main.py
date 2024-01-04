@@ -23,6 +23,8 @@ def Update():
             Bot.Run()
         else:
             print("Bot is un up date")
+            import Bot
+            Bot.Run()
     else:
         with open("Bot.py", "w", encoding="utf-8") as BotFile:
             BotFile.write(response.text)
