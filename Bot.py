@@ -5,12 +5,13 @@ import os
 from dotenv import load_dotenv
 import difflib
 from discord.ui import Button, View
+import settings
 
 # ---------|||||||Variables||||||-----------------
 CommitNumber = "1"
 Testing = False
 # Sets up all the variables
-lastNumber = 0
+lastNumber: int = 0
 HighestNumber = 0
 HasHitHighest = False
 lastUsers = ""
@@ -18,9 +19,8 @@ UsersButtonPushed = {}
 
 # Sets if these systems will  be online
 CountingSystem = True
-ClickingSystem = True
+ClickingSystem = False
 CTOnline = False
-CLOnline = False
 # will set the reason why it is disabled
 DisabledReason = "Getting commands added to me"
 
@@ -36,7 +36,7 @@ if os.path.exists("saves.json"):
 
 # Set up Discord intents for specific events
 intents = discord.Intents.all()
-LightningMC = None
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -59,7 +59,7 @@ DiscordTextChannels = {
 
 # Sets up the bot with Discord.ext.commands.Bot
 bot = commands.Bot(intents=intents, command_prefix="!")
-
+LightningMC: discord.Guild = bot.get_guild(1010718669577408533)
 
 # ---------|||||||Extra Functions||||||-----------------
 def GetText() -> str:
@@ -134,6 +134,10 @@ def is_similar_to_word(word, word_list, threshold=0.8):
     return False
 
 
+def SetNumber(NewNumber: int):
+    global lastNumber
+    lastNumber = NewNumber
+
 # ---------||||||Discord Bot Functions||||||-----------------
 @bot.event
 async def on_ready():
@@ -154,6 +158,7 @@ async def on_ready():
         await bot.change_presence(status=discord.Status.online, activity=game)
     LightningMC = bot.get_guild(1010718669577408533)
     BotDiscordChannel = bot.get_channel(DiscordTextChannels["bots"])
+
     embed = discord.Embed(
         title="Status",
         description=f"Checks\nIs Testing: ✅\n"
@@ -188,40 +193,19 @@ async def on_ready():
         )
         await channel.send(embed=embed)
 
+    for cog_file in settings.cogs_dir.glob("*.py"):
+        if cog_file.name != "__init__.py":
+            await bot.load_extension(f"cogs.{cog_file.name[:-3]}")
+    await bot.tree.sync()
+
+
 
 @bot.event
 async def on_message(message: discord.Message):
     global lastNumber, lastUsers, HasHitHighest, HighestNumber
-    """
-        if str(message.content).startswith("!"):
-            msg = str(message.content)
-            if msg.startswith("!help"):
-                pass
-            elif msg.startswith("!check-api"):
-                await message.reply(content="API is not available right now")
-            elif msg.startswith("!clear-button"):
-                global UsersButtonPushed
-                await message.channel.send("Clearing Button")
-                UsersButtonPushed = {}
-                print("clearing button")
-            elif msg.startswith("!SetNumber"):
-                content = msg.split(" ")
-                try:
-                    SetNumber = int(content[1])
-                except ValueError:
-                    await message.reply("Error, Could not turn that into a int")
-                lastNumber = SetNumber
-                await message.delete()
-            elif msg.startswith("!ResetNumber"):
-                lastNumber = 0
-                Embed = discord.Embed(
-                    title="Reset",
-                    description="A Admin has reset the number back to 1",
-                    color=0xff0000
-                )
-                bots = bot.get_channel(DiscordTextChannels['count'])
-                await bots.send(embed=Embed)
-                await message.delete()"""
+    if isinstance(message.channel, discord.DMChannel):
+        return
+
     if message.channel.name == "count":
         try:
             number = int(str(message.content))
@@ -315,46 +299,6 @@ async def on_message(message: discord.Message):
             print(
                 f"Error: {E}\n\nArgs: {E.args}")
     await bot.process_commands(message)
-
-
-"""-------------------|||||||||||Commands||||||||----------------------------"""
-
-
-@bot.command(
-    help="Will set the counting to what ever the user wants it to be",
-    brief="Sets counting to a custom int arg",
-    hidden=True
-)
-async def SetCount(ctx: commands.Context, SetNumber: int):
-    global lastNumber
-    if ctx.author.id in [810708562094719027, 690225608474492934]:
-        lastNumber = SetNumber
-        print(f"Set Number to {SetNumber}")
-        await ctx.message.delete()
-    else:
-        await ctx.message.delete()
-
-
-@bot.command(
-    help="This will reset the counting, only administrators can run this",
-    brief="Resets the counting to 1",
-    hidden=True
-)
-async def ResetCounting(ctx: commands.Context):
-    global lastNumber
-    AdminRole = discord.utils.get(ctx.guild.roles, id=1192339266928394240)
-    if AdminRole and AdminRole in ctx.author.roles:
-        lastNumber = 0
-        await ctx.message.delete()
-        embed = discord.Embed(
-            title="Reset",
-            description="A Admin has reset the number back to 1",
-            color=0xff0000
-        )
-        CountingChannel = bot.get_channel(DiscordTextChannels["count"])
-        await CountingChannel.send(embed=embed)
-    else:
-        await ctx.message.reply("Your do not have permission for that")
 
 
 # ---------|||||||Running the bot||||||-----------------
