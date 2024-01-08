@@ -6,21 +6,14 @@ from dotenv import load_dotenv
 import difflib
 from discord.ui import Button, View
 import settings
+from settings import lastNumber, lastUsers, HighestNumber, UsersButtonPushed, CTOnline
 
 # ---------|||||||Variables||||||-----------------
 CommitNumber = "1"
 Testing = False
-# Sets up all the variables
-lastNumber: int = 0
-HighestNumber = 0
-HasHitHighest = False
-lastUsers = ""
-UsersButtonPushed = {}
-
 # Sets if these systems will  be online
 CountingSystem = True
 ClickingSystem = False
-CTOnline = False
 # will set the reason why it is disabled
 DisabledReason = "Getting commands added to me"
 
@@ -28,11 +21,14 @@ DisabledReason = "Getting commands added to me"
 if os.path.exists("saves.json"):
     with open("saves.json", "r") as file:
         saves = json.load(file)
-        lastNumber = saves["LastNumber"]
-        HighestNumber = saves["HighestNumber"]
-        lastUsers = saves["LastUser"]
-        UsersButtonPushed = saves["UsersButtonPushed"]
-        CTOnline = saves["CountingSystem"]
+        settings.lastNumber = saves["LastNumber"]
+        settings.HighestNumber = saves["HighestNumber"]
+        settings.UpdateHighest(saves["HighestNumber"])
+        settings.lastUsers = saves["LastUser"]
+        settings.updateScore(saves["LastUser"], saves["LastNumber"])
+        settings.UsersButtonPushed = saves["UsersButtonPushed"]
+        settings.CTOnline = saves["CountingSystem"]
+        HasHitHighest = False
 
 # Set up Discord intents for specific events
 intents = discord.Intents.all()
@@ -60,6 +56,7 @@ DiscordTextChannels = {
 # Sets up the bot with Discord.ext.commands.Bot
 bot = commands.Bot(intents=intents, command_prefix="!")
 LightningMC: discord.Guild = bot.get_guild(1010718669577408533)
+
 
 # ---------|||||||Extra Functions||||||-----------------
 def GetText() -> str:
@@ -134,10 +131,6 @@ def is_similar_to_word(word, word_list, threshold=0.8):
     return False
 
 
-def SetNumber(NewNumber: int):
-    global lastNumber
-    lastNumber = NewNumber
-
 # ---------||||||Discord Bot Functions||||||-----------------
 @bot.event
 async def on_ready():
@@ -196,13 +189,16 @@ async def on_ready():
     for cog_file in settings.cogs_dir.glob("*.py"):
         if cog_file.name != "__init__.py":
             await bot.load_extension(f"cogs.{cog_file.name[:-3]}")
+    print("loading Commands")
     await bot.tree.sync()
-
+    print("Commands loaded")
+    for command in bot.tree.client.commands:
+        print(command.name)
 
 
 @bot.event
 async def on_message(message: discord.Message):
-    global lastNumber, lastUsers, HasHitHighest, HighestNumber
+    global HasHitHighest
     if isinstance(message.channel, discord.DMChannel):
         return
 
@@ -213,11 +209,10 @@ async def on_message(message: discord.Message):
             await bot.process_commands(message)
             return
         if CountingSystem:
-            if number - 1 == lastNumber and str(message.author.name) != lastUsers:
+            if number - 1 == settings.lastNumber:  # and str(message.author.name) != lastUsers:
                 await message.add_reaction('✅')
 
-                lastNumber = number
-                if lastNumber > HighestNumber:
+                if number > settings.HighestNumber:
                     if not HasHitHighest:
                         embed = discord.Embed(
                             title="Hit the Highest",
@@ -226,10 +221,11 @@ async def on_message(message: discord.Message):
                         )
                         await message.channel.send(embed=embed)
                         HasHitHighest = True
-                    HighestNumber = number
+                    settings.UpdateHighest(number)
 
-                lastUsers = str(message.author.name)
-            elif str(message.author.name) == lastUsers:
+                LastCount = str(message.author.name)
+                settings.updateScore(LastCount, number)
+            elif str(message.author.name) == settings.lastUsers:
 
                 await message.add_reaction('❌')
                 embed = discord.Embed(
@@ -238,21 +234,19 @@ async def on_message(message: discord.Message):
                     color=0xff0000  # You can customize the color using hexadecimal
                 )
                 await message.channel.send(embed=embed)
-                lastNumber = 0
-                lastUsers = ""
+                settings.updateScore("", 0)
                 HasHitHighest = False
-            elif number - 1 > lastNumber or number - 1 < lastNumber:
+            elif number - 1 > settings.lastNumber or number - 1 < settings.lastNumber:
 
                 await message.add_reaction('❌')
                 embed = discord.Embed(
                     title="Number wasn't synchronized",
                     description=f"The numbers didn't add up\nUser {message.author.mention} messed up, restarting \nLast "
-                                f"Number was {lastNumber + 1}",
+                                f"Number was {settings.lastNumber + 1}",
                     color=0xff0000  # You can customize the color using hexadecimal
                 )
                 await message.channel.send(embed=embed)
-                lastNumber = 0
-                lastUsers = ""
+                settings.updateScore("", 0)
                 HasHitHighest = False
         else:
             if message.author.id != 1189631393819537518:

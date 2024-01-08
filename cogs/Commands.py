@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from discord import utils
-
 import Bot
-import Bot as DiscordBot
+import settings
+from settings import lastNumber
 
 """
 Commands List:
@@ -48,15 +48,18 @@ class Commands(commands.Cog):
 
     @commands.hybrid_command()
     async def setnumber(self, ctx: discord.ext.commands.Context, number: int):
-        DiscordBot.lastNumber = number
         for Role in ctx.message.author.roles:
             if Role.name == "________Administration________":
-                await ctx.send("Setting")
-                Bot.SetNumber(number)
-                MessagesDM = await ctx.message.author.create_dm()
-                await MessagesDM.send(f"Set Counting Number to {number}")
-                print("Finished")
+                print(settings.lastNumber)
+                settings.updateScore(settings.lastUsers, number)
+                print(settings.lastNumber)
+                await ctx.send(f"Set lastNumber to {number}")
                 break
+
+    @commands.hybrid_command()
+    async def pronouns(self, ctx: discord.ext.commands.Context):
+        """Will show the pronouns of the bot"""
+        await ctx.send("Bot\They")
 
 
 async def setup(bot):
