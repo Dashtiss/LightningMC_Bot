@@ -47,19 +47,30 @@ class Commands(commands.Cog):
         self.bot = bot
 
     @commands.hybrid_command()
-    async def setnumber(self, ctx: discord.ext.commands.Context, number: int):
-        for Role in ctx.message.author.roles:
+    async def setcounting(self, ctx: discord.ext.commands.Context, number: int):
+        """Will set the number of the counting, YOU MUST BE A ADMIN FOR THIS"""
+        for Role in ctx.author.roles:
             if Role.name == "________Administration________":
-                print(settings.lastNumber)
                 settings.updateScore(settings.lastUsers, number)
-                print(settings.lastNumber)
                 await ctx.send(f"Set lastNumber to {number}")
                 break
 
     @commands.hybrid_command()
-    async def pronouns(self, ctx: discord.ext.commands.Context):
-        """Will show the pronouns of the bot"""
-        await ctx.send("Bot\They")
+    async def resetcounting(self, ctx: commands.Context):
+        for Role in ctx.author.roles:
+            if Role.name == "________Administration________":
+                settings.updateScore('', 0)
+                await ctx.send(f"Reset counting")
+                Embed = discord.Embed(
+                    title="Reset",
+                    description="A Admin has reset the number back to 1",
+                    color=0xff0000
+                )
+
+                bots = await ctx.guild.get_channel(Bot.DiscordTextChannels['count'])
+                await bots.send(embed=Embed)
+                return
+        await ctx.send("You do not have permission")
 
 
 async def setup(bot):
