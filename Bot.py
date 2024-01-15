@@ -248,27 +248,30 @@ class LightningMCBot(commands.Bot):
                     await message.reply(embed=embed)
         try:
             if str(message.author) == "LightningMC-Survival#5428":
-                if CheckName(str(message.content)):
-                    Player = message.content.split(":")[0].split(" ")[1]
-                    Player.replace("\\", "")
-                    for word in message.content.split():
-                        if is_similar_to_word(word.lower(), words, threshold=0.92):
-                            staff_chat_channel = message.guild.get_channel(
-                                DiscordTextChannels.get("bots"))
-                            if staff_chat_channel:
-                                embed = discord.Embed(
-                                    title="Chat Message Warn",
-                                    description=f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: {str(message.content).split(': ')[1]}",
-                                    color=0x78bef9  # You can customize the color using hexadecimal
-                                )
-                                await staff_chat_channel.send(
-                                    embed=embed)
-                                print(
-                                    f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: {message.content}")
-                                await message.delete()
-                                break
-                            else:
-                                print("Error: 'staff-chat' channel not found.")
+                print("Got Message from lightning mc survival")
+                Player = message.content.split(":")[0].split(" ")[1]
+                Player.replace("\\", "")
+                for word in message.content.split():
+                    print(f"Testint word {word}")
+                    if is_similar_to_word(word.lower(), words, threshold=0.90):
+                        print("Is simuler")
+                        staff_chat_channel = message.guild.get_channel(
+                            DiscordTextChannels.get("bots"))
+                        if staff_chat_channel:
+                            embed = discord.Embed(
+                                title="Chat Message Warn",
+                                description=f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: "
+                                            f"{str(message.content).split(': ')[1]}",
+                                color=0x78bef9  # You can customize the color using hexadecimal
+                            )
+                            await staff_chat_channel.send(
+                                embed=embed)
+                            print(
+                                f"Chat Message Warn:\nPlayer: {Player}\nMessage Content: {message.content}")
+                            await message.delete()
+                            break
+                        else:
+                            print("Error: 'staff-chat' channel not found.")
         except Exception as E:
             staff_chat_channel = message.guild.get_channel(
                 DiscordTextChannels.get("bots"))
@@ -282,7 +285,7 @@ class LightningMCBot(commands.Bot):
                     embed=embed)
                 print(
                     f"Error: {E}\n\nArgs: {E.args}")
-        await self.process_commands(message)
+        await bot.process_commands(message)
 
 
 # Sets up the bot with Discord.ext.commands.Bot
@@ -303,7 +306,7 @@ def Run():
     global words
     try:
         # Get the bot token from the environment variables
-        bot_token = os.getenv('TOKEN')
+        bot_token = os.getenv('TOKEN').replace("https://panel.lightning-mc.net/server/37ed1c23", "")
 
         if not bot_token:
             print("Bot token not found. Please make sure to set it as an environment variable.")
