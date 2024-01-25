@@ -53,8 +53,10 @@ class Commands(commands.Cog):
             if Role.name == "________Administration________":
                 settings.updateScore(settings.lastUsers, number)
                 await ctx.send(f"Set lastNumber to {number}")
-                break
-
+                return
+        await ctx.send("You do not have permission")
+        DM = await ctx.author.create_dm()
+        await DM.send("You do not have permission to use that command")
     @commands.hybrid_command()
     async def resetcounting(self, ctx: commands.Context):
         for Role in ctx.author.roles:
@@ -71,6 +73,8 @@ class Commands(commands.Cog):
                 await bots.send(embed=Embed)
                 return
         await ctx.send("You do not have permission")
+        DM = await ctx.author.create_dm()
+        await DM.send("You do not have permission to use that command")
 
 
 async def setup(bot):
