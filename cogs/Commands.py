@@ -48,7 +48,7 @@ class Commands(commands.Cog):
 
     @commands.hybrid_command()
     async def setcounting(self, ctx: discord.ext.commands.Context, number: int):
-        """Will set the number of the counting, YOU MUST BE A ADMIN FOR THIS"""
+        """Will set the number of the counting,  YOU MUST BE A ADMIN FOR THIS"""
         if ctx.author.id in [810708562094719027]:
             settings.updateScore(settings.lastUsers, number)
             await ctx.send(f"Set lastNumber to {number}", ephemeral=True)
